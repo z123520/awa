@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100天 & lxl - 纪念图片生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(30deg);
+            animation: float 15s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: rotate(30deg) translate(0, 0); }
+            50% { transform: rotate(30deg) translate(20px, 20px); }
+            100% { transform: rotate(30deg) translate(0, 0); }
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            position: relative;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .design-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background: #4a7bff;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+        
+        .design-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .design-option {
+            padding: 14px 10px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            font-size: 14px;
+            border: 2px solid transparent;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .design-option::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .design-option:hover::after {
+            left: 100%;
+        }
+        
+        .design-option.active {
+            background: #eef4ff;
+            border-color: #4a7bff;
+            color: #4a7bff;
+            box-shadow: 0 4px 10px rgba(74, 123, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .canvas-container {
+            width: 100%;
+            margin: 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eaeaea;
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        .canvas-container:hover canvas {
+            transform: scale(1.02);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .btn:hover::after {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(37, 117, 252, 0.5);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(37, 117, 252, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #e9ecef;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .btn-secondary:active {
+            background: #dee2e6;
+        }
+        
+        .btn-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .customization {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+        }
+        
+        .custom-option {
+            margin-bottom: 15px;
+        }
+        
+        .custom-option label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .color-option:hover {
+            transform: scale(1.2);
+        }
+        
+        .color-option.active {
+            border-color: #495057;
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        
+        .tip {
+            text-align: center;
+            margin-top: 15px;
+            color: #6c757d;
+            font-size: 13px;
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 3px solid #4a7bff;
+        }
+        
+        /* 自定义文字输入框样式 */
+        .text-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 5px;
+            transition: border-color 0.3s;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: #4a7bff;
+            box-shadow: 0 0 0 3px rgba(74, 123, 255, 0.1);
+        }
+        
+        /* 下载成功提示 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 9999;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .loading {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .loading.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4a7bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (min-width: 768px) {
+            .design-options {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+            }
+            
+            .canvas-container {
+                min-height: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 15px;
+            }
+            
+            .canvas-container {
+                min-height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>100天 & lxl</h1>
+            <div class="subtitle">创意纪念图片生成器</div>
+        </header>
+        
+        <div class="content">
+            <div class="design-section">
+                <div class="section-title">选择设计风格</div>
+                <div class="design-options">
+                    <div class="design-option active" data-design="simple">简约风格</div>
+                    <div class="design-option" data-design="heart">心形融合</div>
+                    <div class="design-option" data-design="calendar">日历打卡</div>
+                    <div class="design-option" data-design="journey">旅程地图</div>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>生成图片中...</div>
+                </div>
+                <canvas id="designCanvas" width="700" height="350"></canvas>
+            </div>
+            
+            <div class="customization">
+                <div class="section-title">自定义选项</div>
+                
+                <div class="custom-option">
+                    <label>自定义文字（替换"lxl"）</label>
+                    <input type="text" id="customText" class="text-input" placeholder="输入想要显示的文字（默认lxl）" maxlength="10">
+                </div>
+                
+                <div class="custom-option">
+                    <label>主色调</label>
+                    <div class="color-picker">
+                        <div class="color-option active" style="background-color: #6a11cb;" data-color="#6a11cb"></div>
+                        <div class="color-option" style="background-color: #e91e63;" data-color="#e91e63"></div>
+                        <div class="color-option" style="background-color: #2196f3;" data-color="#2196f3"></div>
+                        <div class="color-option" style="background-color: #4caf50;" data-color="#4caf50"></div>
+                        <div class="color-option" style="background-color: #ff9800;" data-color="#ff9800"></div>
+                        <div class="color-option" style="background-color: #f44336;" data-color="#f44336"></div>
+                        <div class="color-option" style="background-color: #9c27b0;" data-color="#9c27b0"></div>
+                        <div class="color-option" style="background-color: #00bcd4;" data-color="#00bcd4"></div>
+                    </div>
+                </div>
+                
+                <div class="custom-option">
+                    <label>背景风格</label>
+                    <div class="design-options">
+                        <div class="design-option active" data-bg="plain">纯色背景</div>
+                        <div class="design-option" data-bg="gradient">渐变背景</div>
+                        <div class="design-option" data-bg="pattern">图案背景</div>
+                        <div class="design-option" data-bg="photo">照片背景</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tip">
+                提示：点击"生成图片"按钮下载您设计的纪念图片，或点击"分享祝福"保存图片并分享给朋友。
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="generateBtn">
+                    <span class="btn-icon">📸</span> 生成图片
+                </button>
+                <button class="btn btn-secondary" id="shareBtn">
+                    <span class="btn-icon">💝</span> 分享祝福
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>纪念图片生成器 | 为您的特殊时刻创造美好回忆</p>
+        </footer>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 初始化变量
+        let currentDesign = 'simple';
+        let currentColor = '#6a11cb';
+        let currentBg = 'plain';
+        let customText = 'lxl';
+        
+        // 获取DOM元素
+        const canvas = document.getElementById('designCanvas');
+        const ctx = canvas.getContext('2d');
+        const designOptions = document.querySelectorAll('.design-option[data-design]');
+        const colorOptions = document.querySelectorAll('.color-option');
+        const bgOptions = document.querySelectorAll('.design-option[data-bg]');
+        const customTextInput = document.getElementById('customText');
+        const generateBtn = document.getElementById('generateBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const toast = document.getElementById('toast');
+        const loading = document.querySelector('.loading');
+        
+        // 初始化画布
+        function initCanvas() {
+            canvas.width = 700;
+            canvas.height = 350;
+            renderDesign();
+        }
+        
+        // 渲染设计
+        function renderDesign() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 根据背景设置绘制背景
+            drawBackground();
+            
+            // 根据设计风格绘制内容
+            switch(currentDesign) {
+                case 'simple':
+                    drawSimpleDesign();
+                    break;
+                case 'heart':
+                    drawHeartDesign();
+                    break;
+                case 'calendar':
+                    drawCalendarDesign();
+                    break;
+                case 'journey':
+                    drawJourneyDesign();
+                    break;
+            }
+        }
+        
+        // 绘制背景
+        function drawBackground() {
+            switch(currentBg) {
+                case 'plain':
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    break;
+                case 'gradient':
+                    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                    gradient.addColorStop(0, '#f5f7fa');
+                    gradient.addColorStop(1, '#c3cfe2');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    break;
+                case 'pattern':
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 绘制简单图案
+                    ctx.fillStyle = 'rgba(74, 123, 255, 0.05)';
+                    for(let i = 0; i < canvas.width; i += 40) {
+                        for(let j = 0; j < canvas.height; j += 40) {
+                            ctx.beginPath();
+                            ctx.arc(i, j, 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    break;
+                case 'photo':
+                    // 注意：在实际应用中，这里应该加载一张背景图片
+                    // 由于GitHub环境限制，我们使用一个渐变背景代替
+                    const photoGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                    photoGradient.addColorStop(0, '#6a11cb');
+                    photoGradient.addColorStop(1, '#2575fc');
+                    ctx.fillStyle = photoGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 添加一些文字提示
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('照片背景（示例）', canvas.width/2, canvas.height/2);
+                    break;
+            }
+        }
+        
+        // 绘制简约风格设计
+        function drawSimpleDesign() {
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = currentColor;
+            
+            // 绘制标题
+            ctx.fillText('100天', canvas.width/2, canvas.height/2 - 30);
+            ctx.fillText(`& ${customText}`, canvas.width/2, canvas.height/2 + 40);
+            
+            // 绘制装饰线
+            ctx.beginPath();
+            ctx.moveTo(canvas.width/2 - 100, canvas.height/2);
+            ctx.lineTo(canvas.width/2 + 100, canvas.height/2);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        
+        // 绘制心形融合设计
+        function drawHeartDesign() {
+            // 绘制心形
+            drawHeart(canvas.width/2, canvas.height/2 - 20, 60, currentColor);
+            
+            // 绘制文字
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = currentColor;
+            ctx.fillText('100天', canvas.width/2, canvas.height/2 + 80);
+            ctx.fillText(`& ${customText}`, canvas.width/2, canvas.height/2 + 120);
+        }
+        
+        // 绘制日历打卡设计
+        function drawCalendarDesign() {
+            // 绘制日历框
+            ctx.fillStyle = currentColor;
+            ctx.fillRect(canvas.width/2 - 150, canvas.height/2 - 100, 300, 200);
+            
+            // 绘制日历内容
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('100', canvas.width/2, canvas.height/2 - 30);
+            
+            ctx.font = '24px Arial';
+            ctx.fillText('DAYS', canvas.width/2, canvas.height/2 + 10);
+            
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText(`& ${customText}`, canvas.width/2, canvas.height/2 + 60);
+        }
+        
+        // 绘制旅程地图设计
+        function drawJourneyDesign() {
+            // 绘制旅程线
+            ctx.beginPath();
+            ctx.moveTo(100, canvas.height/2);
+            ctx.lineTo(canvas.width - 100, canvas.height/2);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            // 绘制起点和终点
+            ctx.fillStyle = currentColor;
+            ctx.beginPath();
+            ctx.arc(100, canvas.height/2, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(canvas.width - 100, canvas.height/2, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制文字
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('100天旅程', canvas.width/2, canvas.height/2 - 50);
+            ctx.fillText(`& ${customText}`, canvas.width/2, canvas.height/2 + 80);
+        }
+        
+        // 绘制心形函数
+        function drawHeart(x, y, size, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            
+            // 使用贝塞尔曲线绘制心形
+            const topCurveHeight = size * 0.3;
+            ctx.moveTo(0, size/4);
+            
+            // 左半部分
+            ctx.bezierCurveTo(
+                -size/2, -size/2 - topCurveHeight,
+                -size, size/3,
+                0, size
+            );
+            
+            // 右半部分
+            ctx.bezierCurveTo(
+                size, size/3,
+                size/2, -size/2 - topCurveHeight,
+                0, size/4
+            );
+            
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        // 显示提示消息
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 下载图片
+        function downloadImage() {
+            loading.classList.add('active');
+            
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.download = `100天纪念-${customText}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                loading.classList.remove('active');
+                showToast('图片下载成功！');
+            }, 1000);
+        }
+        
+        // 分享功能
+        function shareImage() {
+            loading.classList.add('active');
+            
+            setTimeout(() => {
+                // 在实际应用中，这里应该实现分享功能
+                // 由于GitHub环境限制，我们只是下载图片
+                const link = document.createElement('a');
+                link.download = `分享-100天纪念-${customText}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                loading.classList.remove('active');
+                showToast('图片已保存，可以分享给朋友了！');
+            }, 1000);
+        }
+        
+        // 事件监听
+        designOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                designOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                currentDesign = this.getAttribute('data-design');
+                renderDesign();
+            });
+        });
+        
+        colorOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                colorOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                currentColor = this.getAttribute('data-color');
+                renderDesign();
+            });
+        });
+        
+        bgOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                bgOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                currentBg = this.getAttribute('data-bg');
+                renderDesign();
+            });
+        });
+        
+        customTextInput.addEventListener('input', function() {
+            customText = this.value || 'lxl';
+            renderDesign();
+        });
+        
+        generateBtn.addEventListener('click', downloadImage);
+        shareBtn.addEventListener('click', shareImage);
+        
+        // 初始化
+        initCanvas();
+    </script>
+</body>
+</html>
